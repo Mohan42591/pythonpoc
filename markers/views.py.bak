@@ -1,0 +1,60 @@
+
+
+from django.shortcuts import render
+import requests
+
+import xml.etree.cElementTree as et
+import pandas as pd
+
+xml_path = "C:\Bhavya\osi_pi.xml"
+
+parsedXML = et.parse( xml_path)
+print(parsedXML)
+
+def getvalueofnode(node):
+    """ return node text or None """
+    return node.text if node is not None else None
+
+def read_xml():
+    dfcols = ['Tag', 'Time', 'Temp', 'Lat','Long']
+    df_xml = pd.DataFrame(columns=dfcols)
+
+    for node in parsedXML.getroot():
+        tag = node.find('Tag')
+        time = node.find('Time')
+        temp = node.find('Temperature')
+        lat = node.find('Latitude')
+        long = node.find('Longitude')
+        #name_val = getvalueofnode(tag)
+        #print(tag.text,time.text,temp.text)
+        df_xml = df_xml.append(
+            pd.Series([getvalueofnode(tag), getvalueofnode(time),
+                       getvalueofnode(temp),    getvalueofnode(lat), 
+                       getvalueofnode(long)], index=dfcols),
+            ignore_index=True)
+  
+    return df_xml  
+  
+        
+
+def home(request):
+  #  ip_address = request.META.get('HTTP_X_FORWARDED_FOR', '')
+ 
+        df_xml  = read_xml()
+
+        
+        for  index,row in df_xml.iterrows(): 
+            
+         return render(request, 'markers/index.html',
+
+          {
+      
+            'latitude': row['Lat'],
+            'longitude':row['Long'],
+            'temperature':row['Temp'],
+            'time':row['Time'],
+
+            'api_key': 'AIzaSyCp4hT94RNU8pfidFmArTA-2G9oyWHnrUY' #js key
+            #'api_key': 'AIzaSyCv7XHqb0FWUTWOKJl6yqhSu3_yXQInZIA' 
+             
+          })

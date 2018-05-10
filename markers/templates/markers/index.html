@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    div {
+      display: block;
+    }
+
+    .container {
+      height: 100%;
+      width: 50%;
+      margin-top: 30px;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+
+    .panel-primary>.panel-heading {
+      color: #fff;
+      background-color: #131415;
+      border-color: #111213;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="row" style="height:600px">
+    <div class="col-md-6" class="container position-absolute">
+      <div class="panel panel-primary">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title pull-left">GEO API</h4>
+          <div class="btn-group pull-right">
+          </div>
+        </div>
+        <div class="panel-body fixed-panel panel-height">
+          <div id="map" style="width:100%;height:647px"></div>
+          <script>
+
+            var df_xml = "{{xml_df}}";
+
+            df_xml = JSON.parse(df_xml.replace(/&quot;/g, '"'));
+
+            function myMap() {
+
+              var myCenter = new google.maps.LatLng(df_xml[0]['Lat'], df_xml[0]['Long']);
+              var mapCanvas = document.getElementById("map");
+              var mapOptions = { center: myCenter, zoom: 5 };
+              var map = new google.maps.Map(mapCanvas, mapOptions);
+              setMarkers(map, df_xml)
+            }
+
+            function setMarkers(map, locations) {
+
+              var marker, i
+              var time_temp = [];
+              var time = [];
+              for (i = 0; i < locations.length; i++) {
+
+                var lat = locations[i]['Lat']
+                var long = locations[i]['Long']
+
+                var tag = "Tag : " + locations[i]['Tag'];
+
+                var tags = locations[i]['Tag'];
+                time_temp[i] = tags;
+
+                latlngset = new google.maps.LatLng(lat, long);
+
+                var marker = new google.maps.Marker({
+                  map: map,
+                  position: latlngset,
+                  icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+
+                    scale: 10
+                  },
+                });
+
+
+                var infowindow = new google.maps.InfoWindow();
+                google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {
+                  return function () {
+                    infowindow.setContent(time_temp[i]);
+                    infowindow.open(map, marker);
+                  }
+                })(marker, i));
+
+
+                google.maps.event.addListener(marker, 'click', (function (marker, i) {
+
+                  return function () {
+
+                    tag_value = locations[i]['Tag']
+                    var tag_text = document.getElementById('tag_val_v');
+                    tag_text.value = tag_value;
+
+
+                  }
+                })(marker, i));
+
+              }
+            }
+
+          </script>
+          <script src="https://maps.googleapis.com/maps/api/js?key={{api_key}}&callback=myMap"></script>
+
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6" class="container position-absolute">
+      <div class="panel panel-primary">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title pull-left">Graph</h4>
+
+          <div class="btn-group pull-right">
+          </div>
+        </div>
+
+        <form action="" method="POST"> {% csrf_token %} Tag Name:
+          <input type="text" name="tag_name" id='tag_val_v' value="{{tag_value}}" oninput="this.form.submit()">
+          <input type="Submit" value="Generate Graph">
+
+        </form>
+
+        <div class="panel-body fixed-panel panel-height">
+          <div id="map" class="col-lg-md-3" style="width:100%;height:600px">
+
+            <embed type="image/svg+xml" style="max-width:800px" src={{graphdata|safe}} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="row">
+  <div class="col-md-12">
+      <div class="col-md-6" class="container position-absolute">
+          <div class="panel panel-primary">
+            <div class="panel-heading clearfix">
+              <h4 class="panel-title pull-left">Graph</h4>
+    
+              <div class="btn-group pull-right">
+              </div>
+            </div>
+            <div class="panel-body fixed-panel panel-height">
+              <div id="map" style="width:100%;height:500px">
+                <embed type="image/svg+xml" style="max-width:800px;height:100%;" src={{bargraph|safe}} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" class="container position-absolute">
+            <div class="panel panel-primary">
+              <div class="panel-heading clearfix">
+                <h4 class="panel-title pull-left">Graph</h4>
+      
+                <div class="btn-group pull-right">
+                </div>
+              </div>
+              <div class="panel-body fixed-panel panel-height">
+                <div id="map" style="width:100%;height:500px">
+                  <embed type="image/svg+xml" style="max-width:800px;height:100%;" src={{bargraph|safe}} />
+                </div>
+              </div>
+            </div>
+          </div>
+  </div>
+</div>
+ 
+  
+   
+ 
+
+
+</body>
+
+</html>
